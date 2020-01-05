@@ -1,0 +1,898 @@
+openapi: 3.0.0
+info:
+  version: "1.0.0"
+  title: Typescript-Express-Mongo-Ethereum-Starter
+tags:
+  - name: driver
+    description: Operations destined solely for driver user journey
+paths:
+  '/driver':
+    post:
+      tags:
+        - driver
+      summary: Create driver
+      operationId: createDriver
+      security: 
+      - driverAuth: []
+      responses:
+        '201':
+          description: Driver created
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/SuccessJSendResponse'
+                properties:
+                  data:
+                    properties:
+                      driver:
+                        $ref: '#/components/schemas/User'
+        '409':
+          description: Driver already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/ErrorJSendResponse'
+                properties:
+                  message: 
+                    $ref: '#/components/schemas/AccountExistsError'
+    get:
+      tags:
+        - driver
+      summary: Get driver by token
+      operationId: getDriverByToken
+      security: 
+      - driverAuth: []
+      responses:
+        '200':
+          description: Driver
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/SuccessJSendResponse'
+                properties:
+                  data:
+                    properties:
+                      driver:
+                        $ref: '#/components/schemas/User'
+        '404':
+          description: Driver not found
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/ErrorJSendResponse'
+                properties:
+                  message: 
+                    $ref: '#/components/schemas/AccountNotFoundError'
+          
+          
+  '/driver/{driverID}':  
+    parameters:
+      - $ref: '#/components/parameters/DriverIDPathParameter'
+    get:
+      tags:
+        - driver
+      summary: Get driver
+      operationId: getDriver
+      security: 
+      - driverAuth: []
+      responses:
+        '200':
+          description: Driver
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/SuccessJSendResponse'
+                properties:
+                  data:
+                    properties:
+                      driver:
+                        $ref: '#/components/schemas/User'
+        '404':
+          description: Driver not found
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/ErrorJSendResponse'
+                properties:
+                  message: 
+                    $ref: '#/components/schemas/DriverNotFoundError'
+    delete:
+      tags:
+        - driver
+      summary: Delete driver
+      operationId: deleteDriver
+      security: 
+      - driverAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '404':
+          description: Driver not found
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/ErrorJSendResponse'
+                properties:
+                  message: 
+                    $ref: '#/components/schemas/DriverNotFoundError'
+          
+          
+  '/driver/{driverID}/wallet':
+    parameters:
+      - $ref: '#/components/parameters/DriverIDPathParameter'
+    get:
+      tags:
+        - driver
+      summary: Get wallet
+      operationId: getWallet
+      security: 
+      - driverAuth: []
+      responses:
+        '200':
+          description: Wallet
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/SuccessJSendResponse'
+                properties:
+                  data:
+                    properties:
+                      wallet:
+                        $ref: '#/components/schemas/Wallet'
+        '404':
+          description: Wallet or driver not found
+          content:
+              application/json:
+                schema:
+                  type: object
+                  allOf:
+                  - $ref: '#/components/schemas/ErrorJSendResponse'
+                  properties:
+                    message: 
+                      $ref: '#/components/schemas/WalletNotFoundError'
+    put:
+      tags:
+        - driver
+      summary: Create or update wallet
+      operationId: createOrUpdateWallet
+      security: 
+      - driverAuth: []
+      description: 'Assuming that the supplied address differs from the previous one and has not already been occupied by a different driver, a new link to this wallet address is established. If no address is supplied and the previous one referred to a non-managed, i.e. linked wallet, the driver will be reverted to a managed wallet. If no wallet existed previously, a new one will be created or linked respectively. Additionally updates the quote currency for balance requests.'
+      requestBody:
+        $ref: '#/components/requestBodies/WalletBody'
+      responses:
+        '200':
+          description: Wallet updated
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/SuccessJSendResponse'
+                properties:
+                  data:
+                    properties:
+                      wallet:
+                        $ref: '#/components/schemas/Wallet'
+        '201':
+          description: Wallet created
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/SuccessJSendResponse'
+                properties:
+                  data:
+                    properties:
+                      wallet:
+                        $ref: '#/components/schemas/Wallet'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/FailJSendResponse'
+                properties:
+                  data:
+                    properties:
+                      address:
+                        $ref: '#/components/schemas/InvalidAddressChecksumError'
+                      quoteCurrency:
+                        $ref: '#/components/schemas/QuoteCurrencyOutOfRangeError'
+                      password:
+                        $ref: '#/components/schemas/PasswordRequiredError'
+        '404':
+          description: Driver not found
+          content:
+              application/json:
+                schema:
+                  type: object
+                  allOf:
+                  - $ref: '#/components/schemas/ErrorJSendResponse'
+                  properties:
+                    message: 
+                      $ref: '#/components/schemas/DriverNotFoundError'
+        '409':
+          description: Address already in use
+          content:
+              application/json:
+                schema:
+                  type: object
+                  allOf:
+                  - $ref: '#/components/schemas/ErrorJSendResponse'
+                  properties:
+                    message: 
+                      $ref: '#/components/schemas/AddressOccupiedError'
+
+
+  '/driver/{driverID}/wallet/balance':
+    parameters:
+      - $ref: '#/components/parameters/DriverIDPathParameter'
+    get:
+      tags: 
+        - driver
+      summary: Get wallet balance
+      operationId: getBalance
+      security: 
+      - driverAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IncludePendingQueryParameter'
+      responses:
+        '200':
+          description: Balance including current exchange value
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/SuccessJSendResponse'
+                properties:
+                  data:
+                    type: object
+                    properties: 
+                      balance:
+                        $ref: '#/components/schemas/BlockchainValue'
+        '400':
+          description: Invalid query parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/FailJSendResponse'
+                properties:
+                  data:
+                    properties:
+                      includePending:
+                        $ref: '#/components/schemas/BooleanRequiredError'
+        '404':
+          description: Wallet or driver not found
+          content:
+              application/json:
+                schema:
+                  type: object
+                  allOf:
+                  - $ref: '#/components/schemas/ErrorJSendResponse'
+                  properties:
+                    message: 
+                      $ref: '#/components/schemas/DriverNotFoundError'
+
+                      
+  '/driver/{driverID}/wallet/transfer':
+    parameters:
+      - $ref: '#/components/parameters/DriverIDPathParameter'
+    post:
+      tags: 
+        - driver
+      summary: Transfer wallet funds
+      operationId: transferAmount
+      security: 
+      - driverAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/TransferBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/FailJSendResponse'
+                properties:
+                  data:
+                    properties:
+                      receiverAddress:
+                        $ref: '#/components/schemas/InvalidAddressChecksumError'
+                      amount:
+                        $ref: '#/components/schemas/BaseCurrencyAmountRequiredError'
+                      currency:
+                        $ref: '#/components/schemas/QuoteCurrencyOutOfRangeError'
+                      password:
+                        $ref: '#/components/schemas/PasswordRequiredError'
+                      
+        '404':
+          description: Wallet or driver not found
+          content:
+              application/json:
+                schema:
+                  type: object
+                  allOf:
+                  - $ref: '#/components/schemas/ErrorJSendResponse'
+                  properties:
+                    message: 
+                      $ref: '#/components/schemas/WalletNotFoundError'
+                    
+          
+  '/driver/{driverID}/transactions':
+    parameters:
+      - $ref: '#/components/parameters/DriverIDPathParameter'
+    get:
+      tags:
+        - driver
+      summary: Search driver transactions
+      operationId: searchDriverTransactions
+      security: 
+      - driverAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IncludePendingQueryParameter'
+        - $ref: '#/components/parameters/ShowCurrentValueQueryParameter'
+        - $ref: '#/components/parameters/LimitQueryParameter'
+        - $ref: '#/components/parameters/PageQueryParameter'
+      responses:
+        '200':
+          description: Transactions matching the criteria
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/PartialJSendResponse'
+                properties:
+                  data:
+                    type: object
+                    properties: 
+                      transactions:
+                        $ref: '#/components/schemas/TransactionArray'
+        '400':
+          description: Invalid query parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                - $ref: '#/components/schemas/FailJSendResponse'
+                properties:
+                  data:
+                    properties:
+                      includePending:
+                        $ref: '#/components/schemas/BooleanRequiredError'
+                      showCurrentValue:
+                        $ref: '#/components/schemas/BooleanRequiredError'
+        '404':
+          description: Driver not found
+          content:
+              application/json:
+                schema:
+                  type: object
+                  allOf:
+                  - $ref: '#/components/schemas/ErrorJSendResponse'
+                  properties:
+                    message: 
+                      $ref: '#/components/schemas/DriverNotFoundError'
+  
+components:
+  parameters:
+    UserIDPathParameter:
+      name: userID
+      in: path
+      description: ID of the user for whom the action needs to be executed
+      required: true
+      schema:
+        $ref: '#/components/schemas/UserIDProperty'
+    DriverIDPathParameter:
+      name: driverID
+      in: path
+      description: ID of the driver for whom the action needs to be executed
+      required: true
+      schema:
+        $ref: '#/components/schemas/UserIDProperty'
+    TransactionIDPathParameter:
+      name: transactionID
+      in: path
+      description: ID of the transaction for which the action needs to be executed
+      required: true
+      schema:
+        $ref: '#/components/schemas/TransactionIDProperty'
+    DriverIDQueryParameter:
+      name: driverID
+      in: query
+      description: ID of the driver that needs to be considered by filter
+      required: false
+      schema:
+        $ref: '#/components/schemas/UserIDProperty'
+    QuoteCurrencyQueryParameter:
+      name: quoteCurrency
+      in: query
+      description: Currency to be used as quote
+      required: true
+      schema:
+        $ref: '#/components/schemas/QuoteCurrencyProperty'
+    IncludePendingQueryParameter:
+      name: includePending
+      in: query
+      description: Include pending transactions
+      required: false
+      schema:
+        type: boolean
+        default: false
+    ShowCurrentValueQueryParameter:
+      name: showCurrentValue
+      in: query
+      description: Show current value of transactions
+      required: false
+      schema:
+        type: boolean
+        default: false
+    PageQueryParameter:
+      in: query
+      name: page
+      description: page of records to return
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        default: 1
+    LimitQueryParameter:
+      in: query
+      name: limit
+      description: maximum number of records to return with each page. when set to zero, all records will be returned irrespective of specified page
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        maximum: 50
+        default: 10
+    
+  requestBodies:
+    WalletBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            required:
+              - quoteCurrency
+            properties:
+              address:
+                $ref: '#/components/schemas/AddressProperty'
+              quoteCurrency:
+                $ref: '#/components/schemas/QuoteCurrencyProperty'
+              password: 
+                $ref: '#/components/schemas/PasswordProperty'
+    TransferBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            required:
+              - receiverAddress
+              - baseCurrencyAmount
+              - password
+            properties:
+              receiverAddress:
+                $ref: '#/components/schemas/AddressProperty'
+              amount:
+                type: string
+                example: '43.2'
+              currency:
+                $ref: '#/components/schemas/QuoteCurrencyProperty'
+              password:
+                $ref: '#/components/schemas/PasswordProperty'
+  
+                  
+  responses:
+    Success:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            allOf:
+            - $ref: '#/components/schemas/SuccessJSendResponse'
+            properties:
+              data:
+                example: null
+    
+                
+  schemas:
+    UserIDProperty:
+      type: string
+      example: W267095778
+    TransactionIDProperty:
+      type: integer
+      format: int64
+      example: 38417
+    BaseCurrencyProperty:
+      type: string
+      example: 'ETH'
+    BaseCurrencyAmountProperty:
+      type: string
+      example: '2564000000000000000'
+    QuoteCurrencyProperty:
+      type: string
+      example: 'EUR'
+    QuoteCurrencyAmountProperty:
+      type: number
+      format: float
+      example: 0.6
+    UTCDateTimeProperty:
+      type: string
+      format: date-time
+      example: '2016-08-29T09:12:33.001Z'
+    UTCDateProperty:
+      type: string
+      format: date
+      example: '2016-08-29'
+    AddressProperty:  
+      type: string
+      example: '0x41c1c3d1f21a46ab84e4535167044676c30875be'
+    PasswordProperty:
+      type: string
+      example: "?verySecure123"
+    BlockchainNetworkIDProperty:
+      type: string
+      example: "Ethereum (Main Network)"
+    ForbiddenError:
+      type: string
+      default: "FORBIDDEN"
+    AccountExistsError:
+      type: string
+      example: "ACCOUNT_ALREADY_EXISTS"
+    AccountNotFoundError:
+      type: string
+      example: "ACCOUNT_NOT_FOUND"
+    AddressOccupiedError:
+      type: string
+      example: "ADDRESS_ALREADY_IN_USE"
+    DriverNotFoundError:
+      type: string
+      example: "DRIVER_NOT_FOUND"
+    WalletNotFoundError:
+      type: string
+      example: "WALLET_NOT_FOUND"
+    TransactionNotFoundError:
+      type: string
+      example: "TRANSACTION_NOT_FOUND"
+    InsufficientBalanceError:
+      type: string
+      example: "INSUFFICIENT_BALANCE"
+    PasswordRequiredError:
+      type: string
+      example: "is required when creating a new managed wallet or transferring funds"
+    InvalidAddressChecksumError:
+      type: string
+      example: "has invalid checksum"
+    QuoteCurrencyOutOfRangeError:
+      type: string
+      example: "must be in range ['EUR', 'USD']"
+    QuoteCurrencyRequiredError:
+      type: string
+      example: "is required"
+    BaseCurrencyAmountRequiredError:
+      type: string
+      example: "is required"
+    BooleanRequiredError:
+      type: string
+      example: "must be a boolean"
+    UTCTimestampRequiredError:
+      type: string
+      example: "must be a UTC string timestamp"
+    SuccessJSendResponse:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          example: "success"
+        data:
+          type: object
+    PartialJSendResponse:
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/SuccessJSendResponse'
+      properties:
+        data:
+          type: object
+          properties: 
+            limit:
+              type: number
+              example: 5
+            page: 
+              type: number
+              example: 2
+            hasMore:
+              type: boolean
+              example: false
+            count: 
+              type: number
+              example: 3
+    FailJSendResponse:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          example: "fail"
+        data:
+          type: object
+    ErrorJSendResponse:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: string
+          example: "error"
+        message: 
+          type: string
+        code:
+          type: integer
+          format: int32
+          example: null
+        data:
+          type: object
+          example: null
+    ContractInfo:
+      type: object
+      required:
+        - currency
+        - address
+        - networkID
+      properties:
+        networkID:
+          $ref: '#/components/schemas/BlockchainNetworkIDProperty'
+        address:  
+          $ref: '#/components/schemas/AddressProperty'
+        currency:
+          $ref: '#/components/schemas/BaseCurrencyProperty'
+    TransactionHashProperty:
+      type: string
+      example: "211c6af5-beac-4774-9696-d4021310f61b"
+    ContractInteraction: 
+      type: object
+      required:
+        - contract
+        - txHash
+        - isConfirmed
+        - date
+      properties:
+        contract: 
+          $ref: '#/components/schemas/ContractInfo'
+        txHash: 
+          $ref: '#/components/schemas/TransactionHashProperty'
+        isConfirmed:
+          type: boolean
+          example: true
+        date:
+          $ref: '#/components/schemas/UTCDateTimeProperty'
+        confirmationDate:
+          $ref: '#/components/schemas/UTCDateTimeProperty'
+    Transaction:
+      type: object
+      required:
+        - id
+        - driverID
+        - date
+        - isPending
+        - value
+        - contractInteraction
+      properties:
+        id:
+          $ref: '#/components/schemas/TransactionIDProperty'
+        driverID:
+          $ref: '#/components/schemas/UserIDProperty'
+        date:
+          $ref: '#/components/schemas/UTCDateTimeProperty'
+        isPending:
+          type: boolean
+          example: true
+        value:
+          $ref: '#/components/schemas/TransactionValue'
+        contractInteraction:
+          $ref: '#/components/schemas/ContractInteraction'
+    TransactionArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Transaction'
+    ExchangeRate:
+      type: object
+      properties:
+        date: 
+          $ref: '#/components/schemas/UTCDateTimeProperty'
+        rate:
+          type: number
+          format: float
+          example: 162.54
+    CurrencyProperty:
+      type: string
+      example: EUR
+      enum: 
+        - EUR
+        - USD
+        - ETH
+    CurrencyAmount:
+      type: object
+      properties:
+        amount:
+          $ref: '#/components/schemas/QuoteCurrencyAmountProperty'
+        currency:
+          $ref: '#/components/schemas/CurrencyProperty'
+    CurrencyPairAmount:
+      type: object
+      properties:
+        base:
+          $ref: '#/components/schemas/CurrencyAmount'
+        exchange:
+          $ref: '#/components/schemas/ExchangeRate'
+        quote:
+          $ref: '#/components/schemas/CurrencyAmount'
+    AggregatedCurrencyPairAmount:
+      type: object
+      properties:
+        base:
+          $ref: '#/components/schemas/CurrencyAmount'
+        quote:
+          $ref: '#/components/schemas/CurrencyAmount'
+    TransactionValue:
+      type: object
+      properties:
+        settled:
+          $ref: '#/components/schemas/CurrencyPairAmount'
+        current:
+          $ref: '#/components/schemas/CurrencyPairAmount'
+    PendingBlockchainValue:
+      type: object
+      properties:
+        unconfirmed:
+              $ref: '#/components/schemas/CurrencyPairAmount'
+        incoming: 
+          $ref: '#/components/schemas/CurrencyPairAmount'
+    BlockchainValue:
+      type: object
+      properties:
+        settled:
+          $ref: '#/components/schemas/CurrencyPairAmount'
+        pending:
+          $ref: '#/components/schemas/PendingBlockchainValue'
+        current:
+          $ref: '#/components/schemas/CurrencyPairAmount'
+    AggregatedBlockchainValue:
+      type: object
+      properties:
+        settled:
+          $ref: '#/components/schemas/AggregatedCurrencyPairAmount'
+        pending:
+          $ref: '#/components/schemas/PendingBlockchainValue'
+        current:
+          $ref: '#/components/schemas/CurrencyPairAmount'
+    Currency: 
+      type: object
+      required:
+        - code
+        - name
+        - symbol
+        - type
+        - decimalDigits
+      properties:
+        code:
+          $ref: '#/components/schemas/CurrencyProperty'
+        name:
+          type: string
+          example: Euro
+          enum:
+            - Euro
+            - US Dollar
+            - Ether
+        symbol:
+          type: string
+          example: €
+          enum:
+            - €
+            - $
+            - Ξ
+        type:
+          type: string
+          example: fiat
+          enum: 
+            - fiat
+            - crypto
+        decimalDigits:
+          type: number
+          example: 2
+        baseUnit:
+          type: object
+          properties:
+            name: 
+              type: string
+              example: Cent
+              enum: 
+                - Cent
+                - Wei
+            symbol: 
+              type: string
+              example: ¢
+    Wallet:
+      type: object
+      required:
+        - address
+        - isManaged
+        - hasCreatedManagedWallet
+        - baseCurrency
+        - quoteCurrency
+      properties:
+        address:
+          $ref: '#/components/schemas/AddressProperty'
+        isManaged:
+          type: boolean
+          example: true
+        hasCreatedManagedWallet:
+          type: boolean
+          example: false
+        baseCurrency:
+          $ref: '#/components/schemas/Currency'
+        quoteCurrency:
+          $ref: '#/components/schemas/Currency'
+        networkID:
+          $ref: '#/components/schemas/BlockchainNetworkIDProperty'
+    User:
+      type: object
+      required:
+        - id
+        - role
+        - registerAt
+        - isSuspended
+      properties:
+        id:
+          $ref: '#/components/schemas/UserIDProperty'
+        role:
+          type: string
+          enum:
+            - driver
+        registerAt:
+          $ref: '#/components/schemas/UTCDateTimeProperty'
+        isSuspended:
+          type: boolean
+          default: false
+          example: false
+                    
+  securitySchemes:
+    driverAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

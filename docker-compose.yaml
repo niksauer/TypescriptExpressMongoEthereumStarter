@@ -1,0 +1,64 @@
+version: "3.1"
+
+services:
+  app:
+    build:
+      context: .
+    restart: always
+    volumes:
+      - ./:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - blockchain
+    environment:
+      DATABASE_PROTOCOL: mongodb
+      DATABASE_HOST: db
+      DATABASE_PORT: 27017
+      BLOCKCHAIN_PROTOCOL: http
+      BLOCKCHAIN_HOST: blockchain
+      BLOCKCHAIN_PORT: 8545
+      CONTRACT_ADDRESS: "0x018894Aa82C950eB849812d6157a4a44ed85804d"
+    command: npm run watch
+
+  db:
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo-data:/data/db
+
+  blockchain:
+    image: trufflesuite/ganache-cli:latest
+    ports:
+      - "8545:8545"
+    command:
+      # https://github.com/trufflesuite/ganache-cli#using-ganache-cli
+      - "--accounts"
+      - "10"
+      - "--defaultBalanceEther"
+      - "1000"
+      - "--gasPrice"
+      - "1"
+      - "--mnemonic"
+      - "make purchase caution interest current shiver amount flat donkey sun coyote corn"
+      - "--port"
+      - "8545"
+      - "--db"
+      - "/ganache-data"
+    volumes:
+      - ./ganache-data:/ganache-data
+
+  blockchain_cli:
+    build:
+      context: ./truffle
+    stdin_open: true
+    tty: true
+    depends_on:
+      - blockchain
+    volumes:
+      - ../contracts:/app
+      - ./truffle/truffle-config.js:/app/truffle-config.js
+      - ./truffle/deploy_contracts.sh:/app/deploy_contracts.sh
