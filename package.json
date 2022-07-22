@@ -33,7 +33,7 @@
         "express-async-errors": "^3.1.1",
         "express-paginate": "^1.0.0",
         "express-validator": "^6.2.0",
-        "file-type": "^12.4.0",
+        "file-type": "^16.5.4",
         "jsend": "^1.1.0",
         "jwks-rsa": "^1.6.0",
         "jwt-decode": "^2.2.0",
